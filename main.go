@@ -1,33 +1,23 @@
 package main
 
-// Default GoLang Imports
-// Dependencies Imports
-// Handler Functions Imports
 import (
+	"context"
 	"fmt"
-	"net/http"
+	"os"
+	"os/signal"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-
-	"github.com/vincent-pantaleon/orders-api/handlers"
+	"github.com/vincent-pantaleon/orders-api/application"
 )
 
 func main() {
-	router := chi.NewRouter()
-	router.Use(middleware.Logger)
+	app := application.New()
 
-	router.Get("/get", handlers.GetHandler)
-	router.Get("/post", handlers.PostHandler)
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
 
-	server := &http.Server{
-		Addr:    ":3000",
-		Handler: router,
-	}
-
-	err := server.ListenAndServe()
+	err := app.Start(ctx)
 
 	if err != nil {
-		fmt.Println("Error Running Server with Port: 3000", err)
+		fmt.Println("failed to start app: ", err)
 	}
 }
